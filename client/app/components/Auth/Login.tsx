@@ -110,6 +110,13 @@ const Login: FC<Props> = ({ setRoute, setOpen,refetch }) => {
           <input type="submit" value="Login" className={`${styles.button}`} />
         </div>
         <br />
+        <span
+            className="text-[#2190ff] pl-1 cursor-pointer"
+            onClick={() => setRoute("Forgot-Password")}
+          >
+            Forgot Password?
+          </span>
+        <br />
         <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white">
           Or join with
         </h5>

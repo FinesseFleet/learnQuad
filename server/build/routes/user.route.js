@@ -10,6 +10,8 @@ const userRouter = express_1.default.Router();
 userRouter.post("/registration", user_controller_1.registrationUser);
 userRouter.post("/activate-user", user_controller_1.activateUser);
 userRouter.post("/login", user_controller_1.loginUser);
+userRouter.post("/forgot-password", user_controller_1.forgotPassword);
+userRouter.post("/change-password", user_controller_1.changePassword);
 userRouter.get("/logout", auth_1.isAutheticated, user_controller_1.logoutUser);
 userRouter.get("/me", auth_1.isAutheticated, user_controller_1.getUserInfo);
 userRouter.post("/social-auth", user_controller_1.socialAuth);

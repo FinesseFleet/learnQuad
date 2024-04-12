@@ -20,6 +20,8 @@ import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
 import Loader from "./Loader/Loader";
 import logo from "../../public/assests/logo1.png";
 import { IoCloseOutline } from "react-icons/io5";
+import PasswordVerification from "./Auth/PasswordVerification";
+import ForgotPassword from "./Auth/ForgotPassword";
 
 type Props = {
   open: boolean;
@@ -272,6 +274,34 @@ const Header: FC<Props> = ({ activeItem, setOpen, route, open, setRoute }) => {
                   setRoute={setRoute}
                   activeItem={activeItem}
                   component={Verification}
+                />
+              )}
+            </>
+          )}
+
+{route === "Forgot-Password" && (
+            <>
+              {open && (
+                <CustomModal
+                  open={open}
+                  setOpen={setOpen}
+                  setRoute={setRoute}
+                  activeItem={activeItem}
+                  component={ForgotPassword}
+                />
+              )}
+            </>
+          )}
+
+          {route === "Password-Verification" && (
+            <>
+              {open && (
+                <CustomModal
+                  open={open}
+                  setOpen={setOpen}
+                  setRoute={setRoute}
+                  activeItem={activeItem}
+                  component={PasswordVerification}
                 />
               )}
             </>

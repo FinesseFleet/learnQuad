@@ -174,6 +174,106 @@ export const loginUser = CatchAsyncError(
   }
 );
 
+// forgot password
+interface IForgotPasswordBody {
+  email: string;
+}
+
+export const forgotPassword = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body as IForgotPasswordBody;
+
+      
+      if (!email) {
+        return next(new ErrorHandler("Please enter email", 400));
+      }
+      
+      const user = await userModel.findOne({ email }).select("+password");
+
+      if (!user) {
+        return next(new ErrorHandler("Invalid email", 400));
+      }
+      
+
+      const activationToken = createActivationToken(user);
+
+      const activationCode = activationToken.activationCode;
+
+      const data = { user: { name: user.name }, activationCode };
+      const html = await ejs.renderFile(
+        path.join(__dirname, "../mails/forgot-password.ejs"),
+        data
+      );
+
+      try {
+        await sendMail({
+          email: user.email,
+          subject: "Reset Password",
+          template: "forgot-password.ejs",
+          data,
+        });
+
+        res.status(201).json({
+          success: true,
+          message: `Please check your email: ${user.email} to reset your password!`,
+          activationToken: activationToken.token,
+        });
+      } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400));
+      }
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+// change password
+interface IChangePasswordRequest {
+  activation_token: string;
+  activation_code: string;
+  password:string;
+}
+
+export const changePassword = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { activation_token, activation_code, password } =
+        req.body as IChangePasswordRequest;      
+      const passwordChangedUser: { user: IUser; activationCode: string } = jwt.verify(
+        activation_token,
+        process.env.ACTIVATION_SECRET as string
+      ) as { user: IUser; activationCode: string };
+
+      if (passwordChangedUser.activationCode !== activation_code) {
+        return next(new ErrorHandler("Invalid activation code", 400));
+      }
+
+      const { email} = passwordChangedUser.user;
+
+      const user = await userModel.findOne({ email }).select("+password");
+
+      if (!user) {
+        return next(new ErrorHandler("Invalid email", 400));
+      }
+
+      user.password = password;
+
+      await user.save();
+
+      res.status(201).json({
+        success: true,
+        user,
+      });
+    } catch (error: any) {
+      console.log(error);
+      
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
 // logout user
 export const logoutUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {

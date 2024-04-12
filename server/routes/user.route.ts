@@ -1,7 +1,9 @@
 import express from "express";
 import {
   activateUser,
+  changePassword,
   deleteUser,
+  forgotPassword,
   getAllUsers,
   getUserInfo,
   loginUser,
@@ -21,6 +23,10 @@ userRouter.post("/registration", registrationUser);
 userRouter.post("/activate-user", activateUser);
 
 userRouter.post("/login", loginUser);
+
+userRouter.post("/forgot-password", forgotPassword);
+
+userRouter.post("/change-password", changePassword);
 
 userRouter.get("/logout",isAutheticated, logoutUser);
 

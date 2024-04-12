@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUserRole = exports.getAllUsers = exports.updateProfilePicture = exports.updatePassword = exports.updateUserInfo = exports.socialAuth = exports.getUserInfo = exports.updateAccessToken = exports.logoutUser = exports.loginUser = exports.activateUser = exports.createActivationToken = exports.registrationUser = void 0;
+exports.deleteUser = exports.updateUserRole = exports.getAllUsers = exports.updateProfilePicture = exports.updatePassword = exports.updateUserInfo = exports.socialAuth = exports.getUserInfo = exports.updateAccessToken = exports.logoutUser = exports.changePassword = exports.forgotPassword = exports.loginUser = exports.activateUser = exports.createActivationToken = exports.registrationUser = void 0;
 require("dotenv").config();
 const user_model_1 = __importDefault(require("../models/user.model"));
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
@@ -106,6 +106,65 @@ exports.loginUser = (0, catchAsyncErrors_1.CatchAsyncError)(async (req, res, nex
         (0, jwt_1.sendToken)(user, 200, res);
     }
     catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 400));
+    }
+});
+exports.forgotPassword = (0, catchAsyncErrors_1.CatchAsyncError)(async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return next(new ErrorHandler_1.default("Please enter email", 400));
+        }
+        const user = await user_model_1.default.findOne({ email }).select("+password");
+        if (!user) {
+            return next(new ErrorHandler_1.default("Invalid email", 400));
+        }
+        const activationToken = (0, exports.createActivationToken)(user);
+        const activationCode = activationToken.activationCode;
+        const data = { user: { name: user.name }, activationCode };
+        const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/forgot-password.ejs"), data);
+        try {
+            await (0, sendMail_1.default)({
+                email: user.email,
+                subject: "Reset Password",
+                template: "forgot-password.ejs",
+                data,
+            });
+            res.status(201).json({
+                success: true,
+                message: `Please check your email: ${user.email} to reset your password!`,
+                activationToken: activationToken.token,
+            });
+        }
+        catch (error) {
+            return next(new ErrorHandler_1.default(error.message, 400));
+        }
+    }
+    catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 400));
+    }
+});
+exports.changePassword = (0, catchAsyncErrors_1.CatchAsyncError)(async (req, res, next) => {
+    try {
+        const { activation_token, activation_code, password } = req.body;
+        const passwordChangedUser = jsonwebtoken_1.default.verify(activation_token, process.env.ACTIVATION_SECRET);
+        if (passwordChangedUser.activationCode !== activation_code) {
+            return next(new ErrorHandler_1.default("Invalid activation code", 400));
+        }
+        const { email } = passwordChangedUser.user;
+        const user = await user_model_1.default.findOne({ email }).select("+password");
+        if (!user) {
+            return next(new ErrorHandler_1.default("Invalid email", 400));
+        }
+        user.password = password;
+        await user.save();
+        res.status(201).json({
+            success: true,
+            user,
+        });
+    }
+    catch (error) {
+        console.log(error);
         return next(new ErrorHandler_1.default(error.message, 400));
     }
 });
