@@ -175,13 +175,13 @@ const CourseInformation: FC<Props> = ({
                 setCourseInfo({ ...courseInfo, categories: e.target.value })
               }
             >
-              <option className="dark:bg-[#000] text-[#fff]" value="">
+              <option className="dark:bg-[#000] text-[#939393]" value="">
                 Select Category
               </option>
               {categories &&
                 categories.map((item: any) => (
                   <option
-                    className="dark:bg-[#000] text-[#fff]"
+                    className="dark:bg-[#000] text-[#939393]"
                     value={item.title}
                     key={item._id}
                   >
@@ -228,9 +228,11 @@ const CourseInformation: FC<Props> = ({
         </div>
         <br />
         <div className="w-full">
+        <label className={`${styles.label} w-[50%]`}>Thumbnail <span className=" text-red-500 text-xs">(Required)</span></label>
           <input
             type="file"
             accept="image/*"
+            required
             id="file"
             className="hidden"
             onChange={handleFileChange}
